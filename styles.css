@@ -11,6 +11,12 @@ body {
     height: 100vh;
     flex-direction: column;
     background: linear-gradient(45deg, #f3f4f7, #f7f8fa);
+    overflow-x: hidden;
+}
+
+html, body {
+    height: 100%;
+    overflow-y: auto;  /* Ensure vertical scrolling is possible */
 }
 
 h1 {
@@ -20,15 +26,18 @@ h1 {
     text-align: center;
 }
 
+
 .container {
-    background: #fff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 900px;
-    text-align: center;
+    width: 90%;               /* Set the container width to 90% of the viewport width */
+    max-width: 1600px;        /* Maximum width to ensure it doesn't grow too large */
+    margin: 0 auto;           /* Center the container horizontally */
+    padding: 20px;            /* Add some padding inside the container */
+    box-sizing: border-box;   /* Include padding and border in the element's total width and height */
+    overflow-y: auto;         /* Allow scrolling in the container if content overflows vertically */
+    min-height: 100vh;        /* Make sure the container takes at least the full height of the viewport */
 }
+
+
 
 .section-title {
     font-size: 1.5rem;
@@ -43,19 +52,20 @@ p {
 }
 
 .info-box {
-    background: linear-gradient(135deg, #f0f4f7, #e9eff1);
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    color: #2c3e50;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    background-color: #f4f4f4; /* Light background */
+    padding: 20px;              /* Add padding for spacing */
+    border-radius: 8px;         /* Rounded corners */
+    border: 1px solid #ddd;     /* Border for definition */
+    margin-bottom: 20px;        /* Add spacing at the bottom */
+    width: 100%;                /* Full width of the container */
+    box-sizing: border-box;     /* Include padding and border in the element's total width and height */
+    overflow-wrap: break-word;  /* Allow content to break and not overflow */
 }
+
 
 .info-box:hover {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px); /* Slight lift effect on hover */
+    transform: translateY(-2px);
 }
 
 .info-box p {
@@ -129,20 +139,18 @@ iframe {
     margin-top: 30px;
 }
 
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2rem;
-    }
-
+@media screen and (max-width: 768px) {
     .container {
-        padding: 20px;
-        width: 95%;
+        width: 100%;           /* For smaller screens, use full width */
+        padding: 10px;         /* Adjust padding for mobile */
     }
 
-    iframe {
-        height: 300px;
+    .info-box {
+        width: 100%;           /* Ensure info-box takes the full width on smaller screens */
+        padding: 15px;         /* Slightly smaller padding for better fit */
     }
 }
+
 .info-box {
     background: linear-gradient(135deg, #f0f4f7, #e9eff1);
     padding: 20px;
@@ -156,7 +164,7 @@ iframe {
 
 .info-box:hover {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px); /* Slight lift effect on hover */
+    transform: translateY(-2px);
 }
 
 .info-box p {
@@ -169,4 +177,33 @@ iframe {
 .info-box span {
     color: #3498db;
 }
+.resizable-container {
+    width: 100%;
+    max-width: 100%;
+    height: 70vh;
+    max-height: 80vh;
+    resize: both;
+    overflow: auto;
+    position: relative;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+}
 
+
+#wikiIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+
+.resizable-container::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background: #333;
+    cursor: se-resize;
+}

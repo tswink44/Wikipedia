@@ -148,6 +148,15 @@ async function checkOptimalPath() {
         alert("An error occurred while fetching the path.");
     }
 }
+// Optionally: Resize iframe when the window is resized
+window.addEventListener('resize', function() {
+    const iframe = document.getElementById('wikiIframe');
+    const container = iframe.closest('.resizable-container');
+
+    // Set new iframe dimensions based on the window size
+    iframe.style.width = container.offsetWidth + 'px';
+    iframe.style.height = container.offsetHeight + 'px';
+});
 
 // Initialize the game when the page loads
 window.onload = () => {
@@ -175,7 +184,10 @@ window.onload = () => {
         <button class="button" onclick="checkOptimalPath()">Check Optimal Path</button>
 
         <div class="section-title">Wikipedia Content</div>
-        <iframe id="wikiIframe"></iframe>
+        <div class="resizable-container">
+    <iframe id="wikiIframe" src="" frameborder="0"></iframe>
+</div>
+
     </div>
 
     <footer class="footer">
