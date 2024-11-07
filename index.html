@@ -9,41 +9,76 @@
     <link rel="stylesheet" href="styles.css">
 
     <script>
-        let currentPage = "Main_Page";  // Starting page (Main Page)
-        let targetPage = "";
-        let moveCount = 0;  // This will track the number of moves (or iframe clicks)
+let currentPage = "Main_Page";  // Starting page (Main Page)
+let targetPage = "";
+let moveCount = 0;  // This will track the number of moves (or iframe clicks)
 
-        // Function to generate a random Wikipedia page name
-        // Function to replace underscores with spaces
+// Function to generate a random Wikipedia page using the Wikipedia API
+async function generateRandomPage() {
+    try {
+        // Fetch the random page from your Flask backend
+        const response = await fetch('http://localhost:5000/random_wikipedia_page');
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch data');
+        }
+
+        const data = await response.json();
+
+        // Check if there is an error or a page returned
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+            return;
+        }
+
+        // Set the target page to the random article received
+        targetPage = data.page;
+
+        document.getElementById("targetPage").textContent = replaceUnderscoresWithSpaces(targetPage);
+        document.getElementById("currentPage").textContent = replaceUnderscoresWithSpaces(currentPage);
+        document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
+
+        // Set the target page link
+        document.getElementById("targetPageLink").href = `https://en.wikipedia.org/wiki/${encodeURIComponent(targetPage)}`;
+
+        updateIframe(currentPage);
+    } catch (error) {
+        console.error('Error fetching random page:', error);
+        alert('Error fetching a random target page.');
+    }
+}
+
+// Function to replace underscores with spaces for a cleaner display
 function replaceUnderscoresWithSpaces(text) {
     return text.replace(/_/g, ' ');
 }
 
-// Modify the generateRandomPage function to apply this to currentPage and targetPage
-async function generateRandomPage() {
-    const randomPages = [
-        "Python_(programming_language)",
-        "Breadth-first_search",
-        "Artificial_intelligence",
-        "Machine_learning",
-        "Quantum_computing",
-        "History_of_computing",
-        "Blockchain",
-        "OpenAI",
-        "Internet",
-        "Tesla,_Inc."
-    ];
-
-    targetPage = randomPages[Math.floor(Math.random() * randomPages.length)];
-    document.getElementById("targetPage").textContent = replaceUnderscoresWithSpaces(targetPage);
-    document.getElementById("currentPage").textContent = replaceUnderscoresWithSpaces(currentPage);
-    document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
-
-    updateIframe(currentPage);
+// Function to update the iframe URL based on the current page
+function updateIframe(page) {
+    const iframe = document.getElementById("wikiIframe");
+    iframe.src = `https://en.wikipedia.org/wiki/${encodeURIComponent(page)}`;
 }
 
-        // Function to fetch links from the current page (using the Wikipedia API)
-        async function navigateToPage(newPage) {
+// Function to track iframe clicks
+function trackIframeClicks() {
+    const iframe = document.getElementById("wikiIframe");
+
+    iframe.onload = () => {
+        // Increment move count when iframe content loads
+        moveCount++;  // Increment move count for each iframe page load
+        document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
+    };
+}
+
+// Function to fetch links from the current page using the Wikipedia API
+async function getLinks(page) {
+    const response = await fetch(`http://localhost:5000/find_path?start_page=${page}&end_page=${page}`);
+    const data = await response.json();
+    return data.links || [];  // Returning only the list of links from the current page
+}
+
+// Function to handle navigation between pages
+async function navigateToPage(newPage) {
     if (newPage === targetPage) {
         alert("You reached the target page!");
         return;
@@ -59,102 +94,68 @@ async function generateRandomPage() {
     const links = await getLinks(currentPage);
     updateLinks(links);
 
-    // Update the displayed page name with spaces
-    document.getElementById("currentPage").textContent = replaceUnderscoresWithSpaces(currentPage);
-
     // Update iframe with the new page
     updateIframe(currentPage);
 }
 
-        // Function to handle navigation
-        async function navigateToPage(newPage) {
-            if (newPage === targetPage) {
-                alert("You reached the target page!");
-                return;
-            }
+// Function to update the available links on the page
+function updateLinks(links) {
+    const linksList = document.getElementById("linksList");
+    linksList.innerHTML = "";  // Clear the previous links
 
-            currentPage = newPage;
-            moveCount++;  // Increment move count for each new page
+    // Add each link to the list
+    links.forEach(link => {
+        const listItem = document.createElement("li");
+        const linkElement = document.createElement("a");
+        linkElement.href = "#";
+        linkElement.textContent = link;
+        linkElement.onclick = () => navigateToPage(link);
+        listItem.appendChild(linkElement);
+        linksList.appendChild(listItem);
+    });
+}
 
-            document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
+// Function to check the optimal path using BFS
+async function checkOptimalPath() {
+    const startPage = currentPage;
+    const endPage = targetPage;
 
-            const links = await getLinks(currentPage);
-            updateLinks(links);
+    // Ensure start and end pages are valid
+    if (!startPage || !endPage) {
+        alert("Please provide both start and end Wikipedia pages.");
+        return;
+    }
 
-            updateIframe(currentPage);
+    try {
+        const response = await fetch(`http://localhost:5000/find_path?start_page=${startPage}&end_page=${endPage}`);
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            console.error('Error response:', response.status, errorMessage);
+            alert("An error occurred while fetching the path.");
+            return;
         }
 
-        // Function to update the iframe URL based on the current page
-        function updateIframe(page) {
-            const iframe = document.getElementById("wikiIframe");
-            iframe.src = `https://en.wikipedia.org/wiki/${encodeURIComponent(page)}`;
+        const data = await response.json();
+
+        if (data.path) {
+            alert(`Optimal Path: ${data.path.join(' -> ')}`);
+        } else {
+            alert(data.error);
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert("An error occurred while fetching the path.");
+    }
+}
 
-        // Function to track iframe clicks
-        function trackIframeClicks() {
-            const iframe = document.getElementById("wikiIframe");
+// Initialize the game when the page loads
+window.onload = () => {
+    generateRandomPage();  // Generate a random target page on page load
+    trackIframeClicks();  // Start tracking iframe clicks
+};
 
-            iframe.onload = () => {
-                moveCount++;
-                document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
-            };
-        }
-
-        // Function to update the available links on the page
-        function updateLinks(links) {
-            const linksList = document.getElementById("linksList");
-            linksList.innerHTML = "";
-
-            links.forEach(link => {
-                const listItem = document.createElement("li");
-                const linkElement = document.createElement("a");
-                linkElement.href = "#";
-                linkElement.textContent = link;
-                linkElement.onclick = () => navigateToPage(link);
-                listItem.appendChild(linkElement);
-                linksList.appendChild(listItem);
-            });
-        }
-
-        // Function to check the optimal path using BFS
-        async function checkOptimalPath() {
-            const startPage = currentPage;
-            const endPage = targetPage;
-
-            if (!startPage || !endPage) {
-                alert("Please provide both start and end Wikipedia pages.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`http://localhost:5000/find_path?start_page=${startPage}&end_page=${endPage}`);
-
-                if (!response.ok) {
-                    const errorMessage = await response.text();
-                    console.error('Error response:', response.status, errorMessage);
-                    alert("An error occurred while fetching the path.");
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (data.path) {
-                    alert(`Optimal Path: ${data.path.join(' -> ')}`);
-                } else {
-                    alert(data.error);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert("An error occurred while fetching the path.");
-            }
-        }
-
-        // Initialize the game when the page loads
-        window.onload = () => {
-            generateRandomPage();
-            trackIframeClicks();
-        };
-    </script>
+</script>
 </head>
 <body>
     <div class="container">
@@ -162,12 +163,13 @@ async function generateRandomPage() {
 
         <div class="info-box">
             <p><strong>Current Page:</strong> <span id="currentPage"></span></p>
-            <p><strong>Target Page:</strong> <span id="targetPage"></span></p>
+            <p><strong>Target Page:</strong> <a id="targetPageLink" href="" target="_blank"><span id="targetPage"></span></a></p>
             <p id="moveCount">Moves: 0</p>
         </div>
 
-        <div class="section-title">Navigate</div>
-        <p>Select a link below to navigate from the current page:</p>
+        <div class="section-title">About</div>
+        <p>Your goal is to navigate from the wikipedia main page to the randomly selected target page in as few clicks as possible.<br>
+        You can check the optimal solution using the "Check Optimal Path" button below. (This may take a few seconds)</p>
         <ul id="linksList" class="link-list"></ul>
 
         <button class="button" onclick="checkOptimalPath()">Check Optimal Path</button>

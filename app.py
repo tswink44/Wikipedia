@@ -127,7 +127,22 @@ def find_path():
         print(f"No path found between {start_page} and {end_page}")  # Debugging
         return jsonify({"error": "No path found between the given pages."}), 404
 
+@app.route('/random_wikipedia_page', methods=['GET'])
+def random_wikipedia_page():
+    try:
+        # Fetch a random Wikipedia article using the Wikipedia API
+        url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=1&rnnamespace=0'
+        response = requests.get(url)
+        data = response.json()
 
+        # Extract the random article title
+        random_page_title = data['query']['random'][0]['title']
+
+        # Return the title as JSON
+        return jsonify({'page': random_page_title})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
