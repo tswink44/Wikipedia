@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wikipedia Navigation Game</title>
+    <style>
+        #content-container {
+            border: 1px solid #ccc;
+            padding: 15px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            resize: both;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Wikipedia Navigation Game</h1>
+        <p>Navigate from the Wikipedia homepage to a randomly chosen target page in the fewest clicks possible!</p>
+
+        <label for="start">Start Page: </label>
+        <input type="text" id="start" value="Main Page">
+
+        <label for="target">Target Page: </label>
+        <input type="text" id="target" value="Python (programming language)">
+
+        <button id="start-button">Start BFS</button>
+
+        <div id="status"></div>
+    </div>
+    <script>
+        document.getElementById("start-button").addEventListener("click", async function() {
+            const startPage = document.getElementById("start").value;
+            const targetPage = document.getElementById("target").value;
+
+            const response = await fetch(`/find_path?start=${encodeURIComponent(startPage)}&target=${encodeURIComponent(targetPage)}`);
+            const data = await response.json();
+
+            let result = "";
+            if (data.path) {
+                result = `Shortest path: ${data.path.join(' -> ')}<br>Click count: ${data.clicks}`;
+            } else {
+                result = data.message || "No path found.";
+            }
+            document.getElementById("status").innerHTML = result;
+        });
+    </script>
+</body>
+</html>
