@@ -1,4 +1,4 @@
-/* Global Styles */
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: #f9f9f9;
@@ -16,7 +16,7 @@ body {
 
 html, body {
     height: 100%;
-    overflow-y: auto;  /* Ensure vertical scrolling is possible */
+    overflow-y: auto;
 }
 
 h1 {
@@ -28,13 +28,13 @@ h1 {
 
 
 .container {
-    width: 90%;               /* Set the container width to 90% of the viewport width */
-    max-width: 1600px;        /* Maximum width to ensure it doesn't grow too large */
-    margin: 0 auto;           /* Center the container horizontally */
-    padding: 20px;            /* Add some padding inside the container */
-    box-sizing: border-box;   /* Include padding and border in the element's total width and height */
-    overflow-y: auto;         /* Allow scrolling in the container if content overflows vertically */
-    min-height: 100vh;        /* Make sure the container takes at least the full height of the viewport */
+    width: 90%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    min-height: 100vh;
 }
 
 
@@ -52,14 +52,14 @@ p {
 }
 
 .info-box {
-    background-color: #f4f4f4; /* Light background */
-    padding: 20px;              /* Add padding for spacing */
-    border-radius: 8px;         /* Rounded corners */
-    border: 1px solid #ddd;     /* Border for definition */
-    margin-bottom: 20px;        /* Add spacing at the bottom */
-    width: 100%;                /* Full width of the container */
-    box-sizing: border-box;     /* Include padding and border in the element's total width and height */
-    overflow-wrap: break-word;  /* Allow content to break and not overflow */
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
 }
 
 
@@ -141,13 +141,13 @@ iframe {
 
 @media screen and (max-width: 768px) {
     .container {
-        width: 100%;           /* For smaller screens, use full width */
-        padding: 10px;         /* Adjust padding for mobile */
+        width: 100%;
+        padding: 10px;
     }
 
     .info-box {
-        width: 100%;           /* Ensure info-box takes the full width on smaller screens */
-        padding: 15px;         /* Slightly smaller padding for better fit */
+        width: 100%;
+        padding: 15px;
     }
 }
 

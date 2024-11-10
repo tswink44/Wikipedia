@@ -4,12 +4,16 @@ from collections import deque
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
-# Wikipedia Base API Link
 WIKI_API_URL = "https://en.wikipedia.org/w/api.php"
 
 
 def get_links(page):
-    #Purpose: Fetches Wikipedia Links using its API
+    """
+    :param page: The title of the Wikipedia page from which to extract links.
+    :type page: str
+    :return: A list of strings containing the titles of the linked Wikipedia pages within the specified page, limited to the main namespace (ns=0). If the page is not found or there are no links, an empty list is returned.
+    :rtype: list
+    """
     params = {
         "action": "parse",
         "page": page,
@@ -20,7 +24,6 @@ def get_links(page):
     response = requests.get(WIKI_API_URL, params=params)
     data = response.json()
 
-    # Extract the links from the response
     if 'parse' in data:
         links = [link['*'] for link in data['parse']['links'] if link['ns'] == 0]
         return links
@@ -29,47 +32,37 @@ def get_links(page):
 
 def bidirectional_bfs(start_page, end_page):
     """
-    Purpose: Implements a bi-directional breadth first search function to find the optimal path between two wikipedia pages.
-    Args:
-    start_page (string): the first wikipedia page to start searching from.
-    end_page (string): the last wikipedia page to end searching to.
+    :param start_page: The starting node or page from where the search begins.
+    :param end_page: The target node or page to be reached.
+    :return: A list representing the path from start_page to end_page if one exists, otherwise None.
     """
-    # Initialize queues for both directions
     queue_start = deque([start_page])
     queue_end = deque([end_page])
 
-    # Visited sets for both directions
     visited_start = {start_page}
     visited_end = {end_page}
 
-    # Parent pointers to reconstruct the path later
     parent_start = {start_page: None}
     parent_end = {end_page: None}
 
-    # Perform the search
     while queue_start and queue_end:
-        # Expand from the start side
         current_start = queue_start.popleft()
 
-        # Check if the current node from the start side is already visited on the end side
         if current_start in visited_end:
             return reconstruct_path(parent_start, parent_end, current_start)
 
-        # Explore neighbors of current_start
+
         for neighbor in get_links(current_start):
             if neighbor not in visited_start:
                 visited_start.add(neighbor)
                 parent_start[neighbor] = current_start
                 queue_start.append(neighbor)
 
-        # Expand from the end side
         current_end = queue_end.popleft()
 
-        # Check if the current node from the end side is already visited on the start side
         if current_end in visited_start:
             return reconstruct_path(parent_start, parent_end, current_end)
 
-        # Explore neighbors of current_end
         for neighbor in get_links(current_end):
             if neighbor not in visited_end:
                 visited_end.add(neighbor)
@@ -81,13 +74,12 @@ def bidirectional_bfs(start_page, end_page):
 
 # Path reconstruction function
 def reconstruct_path(parent_start, parent_end, meeting_point):
-    """ Reconstructs the path from the start to the meeting point and from the end to the meeting point:
-    Args:
-    parent_start (string): the first wikipedia page to start searching from.
-    parent_end (string): the last wikipedia page to end searching to.
-    meeting_point (string): the meeting point to be reconstructed.
     """
-    # Reconstruct the path from the start to the meeting point
+    :param parent_start: Dictionary containing the parent nodes from the start point.
+    :param parent_end: Dictionary containing the parent nodes from the end point.
+    :param meeting_point: The node where the search from the start and the end meet.
+    :return: List representing the path reconstructed from start to end via the meeting point.
+    """
     path_start_to_meeting = []
     current = meeting_point
     while current is not None:
@@ -96,20 +88,22 @@ def reconstruct_path(parent_start, parent_end, meeting_point):
 
     path_start_to_meeting.reverse()
 
-    # Reconstruct the path from the end to the meeting point
     path_end_to_meeting = []
     current = parent_end.get(meeting_point)
     while current is not None:
         path_end_to_meeting.append(current)
         current = parent_end.get(current)
 
-    # Combine the paths
     return path_start_to_meeting + path_end_to_meeting
 
 
 @app.route('/find_path', methods=['GET'])
 def find_path():
-    """Implements the bi-directional BFS from above
+    """
+    Handles the endpoint to find a path between two Wikipedia pages.
+    Utilizes bidirectional BFS to find the shortest path between the given start and end pages provided as query parameters.
+
+    :return: JSON response containing the path if found, or an error message with appropriate HTTP status code.
     """
     start_page = request.args.get('start_page')
     end_page = request.args.get('end_page')
@@ -129,16 +123,18 @@ def find_path():
 
 @app.route('/random_wikipedia_page', methods=['GET'])
 def random_wikipedia_page():
+    """
+    View function for Flask route `'/random_wikipedia_page'`. This endpoint retrieves a random Wikipedia page title using Wikipedia's API and returns it as a JSON response.
+
+    :return: JSON object with the title of a random Wikipedia page, or an error message in case of failure.
+    """
     try:
-        # Fetch a random Wikipedia article using the Wikipedia API
         url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=1&rnnamespace=0'
         response = requests.get(url)
         data = response.json()
 
-        # Extract the random article title
         random_page_title = data['query']['random'][0]['title']
 
-        # Return the title as JSON
         return jsonify({'page': random_page_title})
 
     except Exception as e:

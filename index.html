@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wikipedia Path Finder Game</title>
 
-    <!-- Link to external CSS -->
+
     <link rel="stylesheet" href="styles.css">
 
     <script>
-let currentPage = "Main_Page";  // Starting page (Main Page)
+let currentPage = "Main_Page";
 let targetPage = "";
-let moveCount = 0;  // This will track the number of moves (or iframe clicks)
+let moveCount = 0;
 
-// Function to generate a random Wikipedia page using the Wikipedia API
+
 async function generateRandomPage() {
     try {
-        // Fetch the random page from your Flask backend
+
         const response = await fetch('http://localhost:5000/random_wikipedia_page');
 
         if (!response.ok) {
@@ -25,20 +25,20 @@ async function generateRandomPage() {
 
         const data = await response.json();
 
-        // Check if there is an error or a page returned
+
         if (data.error) {
             alert(`Error: ${data.error}`);
             return;
         }
 
-        // Set the target page to the random article received
+
         targetPage = data.page;
 
         document.getElementById("targetPage").textContent = replaceUnderscoresWithSpaces(targetPage);
         document.getElementById("currentPage").textContent = replaceUnderscoresWithSpaces(currentPage);
         document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
 
-        // Set the target page link
+
         document.getElementById("targetPageLink").href = `https://en.wikipedia.org/wiki/${encodeURIComponent(targetPage)}`;
 
         updateIframe(currentPage);
@@ -48,36 +48,36 @@ async function generateRandomPage() {
     }
 }
 
-// Function to replace underscores with spaces for a cleaner display
+
 function replaceUnderscoresWithSpaces(text) {
     return text.replace(/_/g, ' ');
 }
 
-// Function to update the iframe URL based on the current page
+
 function updateIframe(page) {
     const iframe = document.getElementById("wikiIframe");
     iframe.src = `https://en.wikipedia.org/wiki/${encodeURIComponent(page)}`;
 }
 
-// Function to track iframe clicks
+
 function trackIframeClicks() {
     const iframe = document.getElementById("wikiIframe");
 
     iframe.onload = () => {
-        // Increment move count when iframe content loads
-        moveCount++;  // Increment move count for each iframe page load
+
+        moveCount++;
         document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
     };
 }
 
-// Function to fetch links from the current page using the Wikipedia API
+
 async function getLinks(page) {
     const response = await fetch(`http://localhost:5000/find_path?start_page=${page}&end_page=${page}`);
     const data = await response.json();
-    return data.links || [];  // Returning only the list of links from the current page
+    return data.links || [];
 }
 
-// Function to handle navigation between pages
+
 async function navigateToPage(newPage) {
     if (newPage === targetPage) {
         alert("You reached the target page!");
@@ -85,25 +85,25 @@ async function navigateToPage(newPage) {
     }
 
     currentPage = newPage;
-    moveCount++;  // Increment move count for each new page
+    moveCount++;
 
-    // Update move count display
+
     document.getElementById("moveCount").textContent = `Moves: ${moveCount}`;
 
-    // Update available links for the new page
+
     const links = await getLinks(currentPage);
     updateLinks(links);
 
-    // Update iframe with the new page
+
     updateIframe(currentPage);
 }
 
-// Function to update the available links on the page
+
 function updateLinks(links) {
     const linksList = document.getElementById("linksList");
-    linksList.innerHTML = "";  // Clear the previous links
+    linksList.innerHTML = "";
 
-    // Add each link to the list
+
     links.forEach(link => {
         const listItem = document.createElement("li");
         const linkElement = document.createElement("a");
@@ -115,12 +115,10 @@ function updateLinks(links) {
     });
 }
 
-// Function to check the optimal path using BFS
 async function checkOptimalPath() {
     const startPage = currentPage;
     const endPage = targetPage;
 
-    // Ensure start and end pages are valid
     if (!startPage || !endPage) {
         alert("Please provide both start and end Wikipedia pages.");
         return;
@@ -148,20 +146,18 @@ async function checkOptimalPath() {
         alert("An error occurred while fetching the path.");
     }
 }
-// Optionally: Resize iframe when the window is resized
 window.addEventListener('resize', function() {
     const iframe = document.getElementById('wikiIframe');
     const container = iframe.closest('.resizable-container');
 
-    // Set new iframe dimensions based on the window size
     iframe.style.width = container.offsetWidth + 'px';
     iframe.style.height = container.offsetHeight + 'px';
 });
 
-// Initialize the game when the page loads
+
 window.onload = () => {
-    generateRandomPage();  // Generate a random target page on page load
-    trackIframeClicks();  // Start tracking iframe clicks
+    generateRandomPage();  /
+    trackIframeClicks();
 };
 
 </script>
